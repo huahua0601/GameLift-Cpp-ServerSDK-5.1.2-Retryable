@@ -621,7 +621,7 @@ GenericOutcome Internal::GameLiftServerState::SendSocketMessageWithRetries(Messa
     spdlog::debug("Trying to send socket message for process: {}...", m_processId);
     GenericOutcome outcome;
     int resendFailureCount = 0;
-    const int maxFailuresBeforeReconnect = 2;
+    const int maxFailuresBeforeReconnect = 1;
 
     // Delegate to the websocketClientManager to send the request and retry if possible
     const std::function<bool(void)> &retriable = [&] {
