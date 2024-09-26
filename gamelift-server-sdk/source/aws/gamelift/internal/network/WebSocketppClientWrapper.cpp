@@ -212,7 +212,7 @@ WebSocketppClientType::connection_ptr WebSocketppClientWrapper::PerformConnect(c
     }
 
     if (errorCode.value()) {
-        spdlog::error("Connection failed with errorCode: {}", errorCode.message());
+        spdlog::error("Connection failed with errorCode: {}, errorMessage: {}", errorCode.value(), errorCode.message());
     }
     else {
         spdlog::info("Connection established successfully.");
@@ -229,10 +229,16 @@ GenericOutcome WebSocketppClientWrapper::SendSocketMessage(const std::string &re
 
     auto waitForReconnectRetryCount = 0;
     while(!IsConnected()) {
-        spdlog::warn("WebSocket is not connected... isConnected: {}, remoteEndpoint: {}, host: {}, port: {}",
-                    IsConnected(), m_connection->get_remote_endpoint(), m_connection->get_host(), m_connection->get_port());
+        if (m_connection == nullptr) {
+            spdlog::warn("WebSocket is not connected... isConnected: {}, current connection is nullptr",
+                     IsConnected());
+        }
+        else {
+            spdlog::warn("WebSocket is not connected... isConnected: {}, remoteEndpoint: {}, host: {}, port: {}",
+                     IsConnected(), m_connection->get_remote_endpoint(), m_connection->get_host(), m_connection->get_port());
+        }
         // m_connection will be null if reconnect failed after max reties
-        if(m_connection == nullptr || ++waitForReconnectRetryCount >= WAIT_FOR_RECONNECT_MAX_RETRIES) {
+        if(m_connection == nullptr && ++waitForReconnectRetryCount >= WAIT_FOR_RECONNECT_MAX_RETRIES) {
             return GenericOutcome(GameLiftError(GAMELIFT_ERROR_TYPE::WEBSOCKET_SEND_MESSAGE_FAILURE));
         }
         std::this_thread::sleep_for(std::chrono::seconds(WAIT_FOR_RECONNECT_RETRY_DELAY_SECONDS));
