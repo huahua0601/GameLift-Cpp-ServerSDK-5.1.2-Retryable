@@ -237,8 +237,8 @@ GenericOutcome WebSocketppClientWrapper::SendSocketMessage(const std::string &re
             spdlog::warn("WebSocket is not connected... isConnected: {}, remoteEndpoint: {}, host: {}, port: {}",
                      IsConnected(), m_connection->get_remote_endpoint(), m_connection->get_host(), m_connection->get_port());
         }
-        // m_connection will be null if reconnect failed after max reties
-        if(m_connection == nullptr && ++waitForReconnectRetryCount >= WAIT_FOR_RECONNECT_MAX_RETRIES) {
+        // if reconnect failed after max reties, return error.
+        if(++waitForReconnectRetryCount >= WAIT_FOR_RECONNECT_MAX_RETRIES) {
             return GenericOutcome(GameLiftError(GAMELIFT_ERROR_TYPE::WEBSOCKET_SEND_MESSAGE_FAILURE));
         }
         std::this_thread::sleep_for(std::chrono::seconds(WAIT_FOR_RECONNECT_RETRY_DELAY_SECONDS));
